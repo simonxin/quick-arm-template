@@ -1,0 +1,223 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymenttemplate.json",
+  "contentversion": "1.0.0.0",
+  "parameters": {
+    "vmname": {
+      "type": "string",
+      "metadata": {
+        "description": "name prefix of the vms. numbers will be appended after this name"
+      }
+    },
+    "numberofinstances": {
+      "type": "int",
+      "defaultvalue": 2,
+      "metadata": {
+        "description": "number of vm instances to create, default is 2"
+      }
+    },
+    "datadisknumber": {
+      "type": "int",
+      "defaultvalue": 1,
+      "metadata": {
+        "description": "number of data disk attached to each vm"
+      }
+    },
+    "datadisksize": {
+      "type": "int",
+      "defaultvalue": 32,
+      "metadata": {
+        "description": "data disk default size"
+      }
+    },
+    "indexfrom": {
+      "type": "int",
+      "defaultvalue": 1,
+      "metadata": {
+        "description": "index offsite added after vm name, it only affect vm name, does not affect nic ip address starting address"
+      }
+    },
+    "availabilitysetname": {
+      "type": "string",
+      "metadata": {
+        "description": "availability set name for the vms, it is a full name, not prefix"
+      }
+    },
+    "adminusername": {
+      "type": "string",
+      "metadata": {
+        "description": "admin user name for the virtual machines"
+      }
+    },
+    "adminpassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "admin password for the virtual machines"
+      }
+    },
+    "vmsize": {
+      "type": "string",
+      "defaultvalue": "standard_a1",
+      "metadata": {
+        "description": "vm size"
+      }
+    },
+    "imageuri": {
+      "type": "object",
+      "metadata": {
+        "description": "image reference"
+      }
+    },
+    "vmdiagnosticstor": {
+      "type": "string",
+      "metadata": {
+        "description": "vm diagnostic storage account name"
+      }
+    },
+    "vnetrg": {
+      "type": "string",
+      "metadata": {
+        "description": "resource group name which contains the vnet"
+      }
+    },
+    "vnetname": {
+      "type": "string",
+      "metadata": {
+        "description": "existing virtual network. this vnet must has been created already. we will not create vnet in this template"
+      }
+    },
+    "subnetname": {
+      "type": "string",
+      "metadata": {
+        "description": "existing subnet name in this vnet. this vnet subnet but has been created already"
+      }
+    },
+    "vmipscope": {
+      "type": "string",
+      "metadata": {
+        "description": "the started ip address of the vm group. format like 10.0.0.100. "
+      }
+    }
+  },
+  "variables": {
+    "apiversion": "2016-01-01",
+    "storageserviceendpoint": "[if(contains(tolower(resourcegroup().location),'china'), '.blob.core.chinacloudapi.cn', '.blob.core.windows.net')]",
+    "vnetid": "[resourceid(parameters('vnetrg'), 'microsoft.network/virtualnetworks/', parameters('vnetname'))]",
+    "subnetref": "[concat(variables('vnetid'),'/subnets/', parameters('subnetname'))]",
+    "vmname": "[parameters('vmname')]",
+    "imagename": "[concat(parameters('vmname'),'-image')]",
+    "vmstorageaccountcontainername": "vhds",
+    "vmdiagnosticstorsku": "standard_lrs",
+    "nicname": "nic01-",
+    "ipconfigname": "ipconfig",
+    "enableIPForwarding": true,
+    "datadisktype": "standard_lrs",
+    "osdisktype": "standard_lrs"
+  },
+  "resources": [
+    {
+      "type": "microsoft.compute/availabilitysets",
+      "name": "[parameters('availabilitysetname')]",
+      "apiversion": "2016-04-30-preview",
+      "location": "[resourcegroup().location]",
+      "properties": {
+        "managed": true,
+        "platformfaultdomaincount": 2,
+        "platformupdatedomaincount": 5
+      },
+      "tags": {}
+    },
+    {
+      "apiversion": "2017-03-01",
+      "type": "microsoft.network/networkinterfaces",
+      "name": "[if(greater(parameters('numberofinstances'),1),concat(variables('nicname'),parameters('vmname'),padleft(add(copyindex('nicloop'), parameters('indexfrom')),2,'0')),concat(variables('nicname'),parameters('vmname')))]",
+      "location": "[resourcegroup().location]",
+      "copy": {
+        "name": "nicloop",
+        "count": "[parameters('numberofinstances')]"
+      },
+      "properties": {
+        "enableIPForwarding": "[variables('enableIPForwarding')]",
+        "ipconfigurations": [
+          {
+            "name": "[variables('ipconfigname')]",
+            "properties": {
+              "privateipallocationmethod": "static",
+              "privateipaddress": "[concat(substring(parameters('vmipscope'), 0, lastindexof(parameters('vmipscope'), '.')), '.', add(int(last(split(parameters('vmipscope'),'.'))), copyindex('nicloop')))]",
+              "subnet": {
+                "id": "[variables('subnetref')]"
+              }
+            }
+          }
+        ]
+      },
+      "tags": {}
+    },
+    {
+      "apiversion": "2016-04-30-preview",
+      "type": "microsoft.compute/virtualmachines",
+      "name": "[if(greater(parameters('numberofinstances'),1),concat(variables('vmname'),padleft(add(copyindex('vmloop'), parameters('indexfrom')),2,'0')),variables('vmname'))]",
+      "location": "[resourcegroup().location]",
+      "tags": {},
+      "copy": {
+        "name": "vmloop",
+        "count": "[parameters('numberofinstances')]"
+      },
+      "dependson": [
+        "[if(greater(parameters('numberofinstances'),1),concat('microsoft.network/networkinterfaces/',variables('nicname'), parameters('vmname'), padleft(add(copyindex('vmloop') , parameters('indexfrom')),2,'0')), concat('microsoft.network/networkinterfaces/',variables('nicname'),parameters('vmname')) )]",
+        "[concat('microsoft.compute/availabilitysets/', parameters('availabilitysetname'))]"
+      ],
+      "properties": {
+        "availabilityset": {
+          "id": "[resourceid('microsoft.compute/availabilitysets/', parameters('availabilitysetname'))]"
+        },
+        "hardwareprofile": {
+          "vmsize": "[parameters('vmsize')]"
+        },
+        "osprofile": {
+          "computername": "[if(greater(parameters('numberofinstances'),1),concat(variables('vmname'),padleft(add(copyindex('vmloop') , parameters('indexfrom')),2,'0')),variables('vmname'))]",
+          "adminusername": "[parameters('adminusername')]",
+          "adminpassword": "[parameters('adminpassword')]"
+        },
+        "storageprofile": {
+          "osdisk": {
+            "name": "[if(greater(parameters('numberofinstances'),1),concat(variables('vmname'),padleft(add(copyindex('vmloop') , parameters('indexfrom')),2,'0'),'-os-disk'),concat(variables('vmname'),'-os-disk'))]",
+            "createoption": "fromimage",
+            "managedDisk": {
+              "storageAccountType": "[variables('osdisktype')]"
+            }
+          },
+          "copy": [
+            {
+              "name": "datadisks",
+              "count": "[parameters('datadisknumber')]",
+              "input": {
+                "caching": "readonly",
+                "disksizegb": "[parameters('datadisksize')]",
+                "managedDisk": {
+                  "storageAccountType": "[variables('datadisktype')]"
+                },
+                "lun": "[copyindex('datadisks')]",
+                "name": "[if(greater(parameters('numberofinstances'),1),concat(variables('vmname'),padleft(add(copyindex('vmloop'), parameters('indexfrom')),2,'0'),'-data-disk',copyindex('datadisks')),concat(variables('vmname'),'-data-disk',copyindex('datadisks')))]",
+                "createoption": "empty"
+              }
+            }
+          ],
+          "imagereference": "[parameters('imageuri')]"
+        },
+        "networkprofile": {
+          "networkinterfaces": [
+            {
+              "id": "[if(greater(parameters('numberofinstances'),1),resourceid('microsoft.network/networkinterfaces/', concat(variables('nicname'), parameters('vmname'), padleft(add(copyindex('vmloop') , parameters('indexfrom')),2,'0'))),resourceid('microsoft.network/networkinterfaces/', concat(variables('nicname'), parameters('vmname'))))]"
+            }
+          ]
+        },
+        "diagnosticsprofile": {
+          "bootdiagnostics": {
+            "enabled": true,
+            "storageuri": "[concat('http://', parameters('vmdiagnosticstor'), variables('storageserviceendpoint'))]"
+          }
+        }
+      }
+    }
+  ]
+}
