@@ -1,0 +1,74 @@
+{
+    "parameters":  {
+                       "subnets":  {
+                                       "value":  [
+                                                     {
+                                                         "name":  "web",
+                                                         "properties":  {
+                                                                            "addressPrefix":  "10.0.2.0/24"
+                                                                        }
+                                                     },
+                                                     {
+                                                         "name":  "app",
+                                                         "properties":  {
+                                                                            "addressPrefix":  "10.0.3.0/24"
+                                                                        }
+                                                     },
+                                                     {
+                                                         "name":  "sqldb",
+                                                         "properties":  {
+                                                                            "addressPrefix":  "10.0.4.0/24"
+                                                                        }
+                                                     },
+                                                     {
+                                                         "name":  "mysqldb",
+                                                         "properties":  {
+                                                                            "addressPrefix":  "10.0.5.0/24"
+                                                                        }
+                                                     },
+                                                     {
+                                                         "name":  "redis",
+                                                         "properties":  {
+                                                                            "addressPrefix":  "10.0.6.0/24"
+                                                                        }
+                                                     },
+                                                     {
+                                                         "name":  "appgw",
+                                                         "properties":  {
+                                                                            "addressPrefix":  "10.0.7.0/24"
+                                                                        }
+                                                     },
+                                                     {
+                                                         "name":  "sf",
+                                                         "properties":  {
+                                                                            "addressPrefix":  "10.0.8.0/24"
+                                                                        }
+                                                     },
+                                                     {
+                                                         "name":  "mgmt",
+                                                         "properties":  {
+                                                                            "addressPrefix":  "10.0.100.0/24"
+                                                                        }
+                                                     },
+                                                     {
+                                                         "name":  "gatewaysubnet",
+                                                         "properties":  {
+                                                                            "addressPrefix":  "10.0.200.0/24"
+                                                                        }
+                                                     }
+                                                 ]
+                                   },
+                       "vnetname":  {
+                                        "value":  "{vnet_name}"
+                                    },
+                       "location":  {
+                                        "value":  "chinanorth2"
+                                    },
+                       "addressprefixes":  {
+                                               "value":  [
+                                                             "10.0.0.0/16"
+                                                         ]
+                                           }
+                   },
+    "contentVersion":  "1.0.0.0"
+}

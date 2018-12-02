@@ -1,0 +1,28 @@
+{
+    "parameters":  {
+                       "securityrules":  {
+                                             "value":  [
+                                                           {
+                                                               "name":  "allow_port",
+                                                               "properties":  {
+                                                                                  "sourceaddressprefix":  "virtualnetwork",
+                                                                                  "sourceportrange":  "*",
+                                                                                  "protocol":  "tcp",
+                                                                                  "destinationaddressprefix":  "virtualnetwork",
+                                                                                  "destinationportrange":  1433,
+                                                                                  "access":  "allow",
+                                                                                  "priority":  "100",
+                                                                                  "direction":  "inbound"
+                                                                              }
+                                                           }
+                                                       ]
+                                         },
+                       "location":  {
+                                        "value":  "chinanorth2"
+                                    },
+                       "nsgname":  {
+                                       "value":  "{nsg_name}"
+                                   }
+                   },
+    "contentVersion":  "1.0.0.0"
+}

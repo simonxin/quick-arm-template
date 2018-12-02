@@ -1,0 +1,14 @@
+{
+    "parameters":  {
+                       "storageaccounttype":  {
+                                                  "value":  "standard_lrs"
+                                              },
+                       "storageaccountname":  {
+                                                  "value":  "{storage account name}"
+                                              },
+                       "location":  {
+                                        "value":  "chinanorth2"
+                                    }
+                   },
+    "contentversion":  "1.0.0.0"
+}

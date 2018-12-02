@@ -1,0 +1,60 @@
+{
+    "parameters":  {
+                       "vmipscope":  {
+                                         "value":  ""
+                                     },
+                       "adminpassword":  {
+                                             "reference":  {
+                                                               "keyvault":  {
+                                                                                "id":  "/subscriptions/{subID}/resourceGroups/{resourcegroupname}/providers/Microsoft.KeyVault/vaults/{keyvaultname}"
+                                                                            },
+                                                               "secretname":  "{securename}"
+                                                           }
+                                         },
+                       "adminusername":  {
+                                             "value":  "vmadmin"
+                                         },
+                       "subnetname":  {
+                                          "value":  "{subnetname}"
+                                      },
+                       "vmname":  {
+                                      "value":  "{vmname}"
+                                  },
+                       "datadisksize":  {
+                                            "value":  {disksize}
+                                        },
+                       "vnetrg":  {
+                                      "value":  "{vnet_resource_group}"
+                                  },
+                       "imageuri":  {
+                                        "value":  {
+                                                      "publisher":  "suse",
+                                                      "version":  "latest",
+                                                      "offer":  "sles",
+                                                      "sku":  "12-sp3"
+                                                  }
+                                    },
+                       "availabilitysetname":  {
+                                                   "value":  "{avset_name}"
+                                               },
+                       "vmsize":  {
+                                      "value":  "standard_a2"
+                                  },
+                       "vnetname":  {
+                                        "value":  "{vnet_name}"
+                                    },
+                       "datadisknumber":  {
+                                              "value":  1
+                                          },
+                       "vmdiagnosticstor":  {
+                                                "value":  "{storage account name}"
+                                            },
+                       "indexfrom":  {
+                                         "value":  0
+                                     },
+                       "numberofinstances":  {
+                                                 "value":  1
+                                             }
+                   },
+    "contentversion":  "1.0.0.0"
+}
